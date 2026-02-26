@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, Banknote, Smartphone, CreditCard, Wallet, Minus, Plus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -28,8 +29,9 @@ export default function Checkout() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [payMethod, setPayMethod] = useState("balance");
   const [balancePay, setBalancePay] = useState("");
-  const [operator, setOperator] = useState("店员");
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const operator = profile?.display_name || "店员";
 
   useEffect(() => {
     supabase.from("service_items").select("*").eq("is_active", true).order("sort_order").then(({ data }) => {
@@ -227,7 +229,7 @@ export default function Checkout() {
 
           <div className="mb-4">
             <Label className="mb-1.5 block">操作员</Label>
-            <Input value={operator} onChange={(e) => setOperator(e.target.value)} />
+            <Input value={operator} readOnly className="bg-muted" />
           </div>
 
           <Button onClick={handleSubmit} className="w-full" size="lg" disabled={!member || cart.length === 0}>
