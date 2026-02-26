@@ -1,5 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Users, CreditCard, ShoppingCart, FileText, Scissors } from "lucide-react";
+import { Home, Users, CreditCard, ShoppingCart, FileText, Scissors, LogOut, UserPlus } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import AddEmployeeDialog from "@/components/AddEmployeeDialog";
 
 const navItems = [
   { to: "/", label: "首页", icon: Home },
@@ -11,10 +14,11 @@ const navItems = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const { profile, signOut } = useAuth();
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
       <aside className="w-60 bg-sidebar text-sidebar-foreground flex flex-col shrink-0">
         <div className="p-5 flex items-center gap-3 border-b border-sidebar-border">
           <div className="w-10 h-10 rounded-lg bg-sidebar-primary flex items-center justify-center">
@@ -44,17 +48,35 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-sidebar-border">
-          <p className="text-xs text-sidebar-foreground/40 text-center">v1.0 · 会员管理系统</p>
+        <div className="p-3 border-t border-sidebar-border space-y-1">
+          {profile?.role === "admin" && (
+            <button
+              onClick={() => setShowAddEmployee(true)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+            >
+              <UserPlus className="w-4.5 h-4.5" />
+              添加员工
+            </button>
+          )}
+          <div className="flex items-center justify-between px-3 py-2">
+            <div>
+              <p className="text-sm font-medium text-sidebar-foreground">{profile?.display_name || "员工"}</p>
+              <p className="text-xs text-sidebar-foreground/40">{profile?.role === "admin" ? "管理员" : "店员"}</p>
+            </div>
+            <button onClick={signOut} className="text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors" title="退出登录">
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 overflow-auto">
         <div className="p-6 max-w-6xl mx-auto animate-fade-in">
           {children}
         </div>
       </main>
+
+      <AddEmployeeDialog open={showAddEmployee} onOpenChange={setShowAddEmployee} />
     </div>
   );
 }

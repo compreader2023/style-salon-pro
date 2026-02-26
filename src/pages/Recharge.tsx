@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { CreditCard, Banknote, Smartphone, CreditCard as CardIcon } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,9 @@ export default function Recharge() {
   const [amount, setAmount] = useState("");
   const [bonus, setBonus] = useState(0);
   const [payMethod, setPayMethod] = useState("cash");
-  const [operator, setOperator] = useState("店员");
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const operator = profile?.display_name || "店员";
 
   useEffect(() => {
     supabase.from("recharge_rules").select("*").eq("is_active", true).order("recharge_amount").then(({ data }) => {
@@ -165,7 +167,7 @@ export default function Recharge() {
 
           <div>
             <Label className="mb-1.5 block">操作员</Label>
-            <Input value={operator} onChange={(e) => setOperator(e.target.value)} placeholder="操作员姓名" />
+            <Input value={operator} readOnly className="bg-muted" />
           </div>
         </div>
 
