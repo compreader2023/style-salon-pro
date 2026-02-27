@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ShoppingCart, Banknote, Smartphone, CreditCard, Wallet, Minus, Plus } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { ShoppingCart, Banknote, Smartphone, CreditCard, Wallet, Minus, Plus, PlusCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MemberSearch from "@/components/MemberSearch";
+import ServiceManager from "@/components/ServiceManager";
 import { useToast } from "@/hooks/use-toast";
 
 const paymentMethods = [
@@ -19,8 +20,11 @@ const paymentMethods = [
 ];
 
 interface CartItem {
-  service: Tables<"service_items">;
+  id: string; // service id or custom unique id
+  name: string;
+  price: number;
   quantity: number;
+  isCustom?: boolean;
 }
 
 export default function Checkout() {
@@ -29,34 +33,56 @@ export default function Checkout() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [payMethod, setPayMethod] = useState("balance");
   const [balancePay, setBalancePay] = useState("");
+  const [customName, setCustomName] = useState("");
+  const [customPrice, setCustomPrice] = useState("");
   const { toast } = useToast();
   const { profile } = useAuth();
   const operator = profile?.display_name || "店员";
+  const isAdmin = profile?.role === "admin";
 
-  useEffect(() => {
+  const loadServices = useCallback(() => {
     supabase.from("service_items").select("*").eq("is_active", true).order("sort_order").then(({ data }) => {
       setServices(data || []);
     });
   }, []);
 
-  const totalAmount = cart.reduce((s, i) => s + i.service.price * i.quantity, 0);
+  useEffect(() => { loadServices(); }, [loadServices]);
+
+  const totalAmount = cart.reduce((s, i) => s + i.price * i.quantity, 0);
 
   const addToCart = (service: Tables<"service_items">) => {
     setCart(prev => {
-      const existing = prev.find(i => i.service.id === service.id);
-      if (existing) return prev.map(i => i.service.id === service.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...prev, { service, quantity: 1 }];
+      const existing = prev.find(i => i.id === service.id);
+      if (existing) return prev.map(i => i.id === service.id ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { id: service.id, name: service.name, price: Number(service.price), quantity: 1 }];
     });
   };
 
-  const updateQty = (serviceId: string, delta: number) => {
+  const addCustomToCart = () => {
+    const trimmedName = customName.trim();
+    const numPrice = parseFloat(customPrice);
+    if (!trimmedName || isNaN(numPrice) || numPrice <= 0) {
+      toast({ title: "请输入有效的服务名称和价格", variant: "destructive" });
+      return;
+    }
+    const customId = `custom_${Date.now()}`;
+    setCart(prev => [...prev, { id: customId, name: trimmedName, price: numPrice, quantity: 1, isCustom: true }]);
+    setCustomName("");
+    setCustomPrice("");
+  };
+
+  const updateQty = (itemId: string, delta: number) => {
     setCart(prev => prev.map(i => {
-      if (i.service.id === serviceId) {
+      if (i.id === itemId) {
         const newQty = i.quantity + delta;
         return newQty <= 0 ? null : { ...i, quantity: newQty };
       }
       return i;
     }).filter(Boolean) as CartItem[]);
+  };
+
+  const removeItem = (itemId: string) => {
+    setCart(prev => prev.filter(i => i.id !== itemId));
   };
 
   const handleSubmit = async () => {
@@ -93,8 +119,8 @@ export default function Checkout() {
     await supabase.from("consumption_items").insert(
       cart.map(i => ({
         consumption_id: record.id,
-        service_name: i.service.name,
-        price: i.service.price,
+        service_name: i.name,
+        price: i.price,
         quantity: i.quantity,
       }))
     );
@@ -134,11 +160,12 @@ export default function Checkout() {
             )}
           </div>
 
+          {/* Preset Services */}
           <div className="bg-card rounded-xl border border-border p-4 md:p-6">
             <Label className="mb-3 block">选择服务</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {services.map((s) => {
-                const inCart = cart.find(i => i.service.id === s.id);
+                const inCart = cart.find(i => i.id === s.id);
                 return (
                   <button
                     key={s.id}
@@ -155,6 +182,43 @@ export default function Checkout() {
               })}
             </div>
           </div>
+
+          {/* Custom Service Input */}
+          <div className="bg-card rounded-xl border border-border p-4 md:p-6">
+            <Label className="mb-3 block">自定义服务</Label>
+            <div className="flex gap-2 items-end">
+              <div className="flex-1">
+                <Label className="text-xs text-muted-foreground mb-1 block">服务名称</Label>
+                <Input
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  placeholder="如：刮胡子"
+                />
+              </div>
+              <div className="w-28">
+                <Label className="text-xs text-muted-foreground mb-1 block">价格</Label>
+                <Input
+                  type="number"
+                  value={customPrice}
+                  onChange={(e) => setCustomPrice(e.target.value)}
+                  placeholder="10"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <Button variant="outline" onClick={addCustomToCart} className="shrink-0">
+                <PlusCircle className="w-4 h-4 mr-1" />
+                添加
+              </Button>
+            </div>
+          </div>
+
+          {/* Admin: Service Management */}
+          {isAdmin && (
+            <div className="bg-card rounded-xl border border-border p-4 md:p-6">
+              <ServiceManager services={services} onUpdate={loadServices} />
+            </div>
+          )}
         </div>
 
         {/* Right: Cart & Pay */}
@@ -165,17 +229,22 @@ export default function Checkout() {
           ) : (
             <div className="space-y-2 mb-4">
               {cart.map((item) => (
-                <div key={item.service.id} className="flex items-center justify-between py-2 border-b border-border">
-                  <div>
-                    <p className="text-sm font-medium">{item.service.name}</p>
-                    <p className="text-xs text-muted-foreground">¥{item.service.price} × {item.quantity}</p>
+                <div key={item.id} className="flex items-center justify-between py-2 border-b border-border">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <p className="text-sm font-medium truncate">{item.name}</p>
+                      {item.isCustom && (
+                        <span className="text-[10px] bg-accent text-muted-foreground px-1 py-0.5 rounded shrink-0">自定义</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">¥{item.price} × {item.quantity} = ¥{(item.price * item.quantity).toFixed(2)}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => updateQty(item.service.id, -1)} className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-accent">
+                  <div className="flex items-center gap-1.5 ml-2">
+                    <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-accent">
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="text-sm w-4 text-center">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.service.id, 1)} className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-accent">
+                    <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-accent">
                       <Plus className="w-3 h-3" />
                     </button>
                   </div>
@@ -231,7 +300,7 @@ export default function Checkout() {
 
           <Button onClick={handleSubmit} className="w-full" size="lg" disabled={!member || cart.length === 0}>
             <ShoppingCart className="w-4 h-4 mr-2" />
-            确认结算
+            确认结算 {totalAmount > 0 && `¥${totalAmount.toFixed(2)}`}
           </Button>
         </div>
       </div>
