@@ -10,6 +10,7 @@ import Members from "./pages/Members";
 import Recharge from "./pages/Recharge";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
+import Employees from "./pages/Employees";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
             <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+            <Route path="/employees" element={<ProtectedRoute><Employees /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

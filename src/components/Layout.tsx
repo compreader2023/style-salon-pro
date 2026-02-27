@@ -1,8 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Users, CreditCard, ShoppingCart, FileText, Scissors, LogOut, UserPlus } from "lucide-react";
+import { Home, Users, CreditCard, ShoppingCart, FileText, Scissors, LogOut, KeyRound, UsersRound } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import AddEmployeeDialog from "@/components/AddEmployeeDialog";
+import ChangePasswordDialog from "@/components/ChangePasswordDialog";
 
 const navItems = [
   { to: "/", label: "首页", icon: Home },
@@ -15,7 +15,7 @@ const navItems = [
 export default function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const { profile, signOut } = useAuth();
-  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -50,14 +50,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="p-3 border-t border-sidebar-border space-y-1">
           {profile?.role === "admin" && (
-            <button
-              onClick={() => setShowAddEmployee(true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+            <NavLink
+              to="/employees"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                location.pathname === "/employees"
+                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              }`}
             >
-              <UserPlus className="w-4.5 h-4.5" />
-              添加员工
-            </button>
+              <UsersRound className="w-4.5 h-4.5" />
+              员工管理
+            </NavLink>
           )}
+          <button
+            onClick={() => setShowChangePassword(true)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+          >
+            <KeyRound className="w-4.5 h-4.5" />
+            修改密码
+          </button>
           <div className="flex items-center justify-between px-3 py-2">
             <div>
               <p className="text-sm font-medium text-sidebar-foreground">{profile?.display_name || "员工"}</p>
@@ -76,7 +87,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </main>
 
-      <AddEmployeeDialog open={showAddEmployee} onOpenChange={setShowAddEmployee} />
+      <ChangePasswordDialog open={showChangePassword} onOpenChange={setShowChangePassword} />
     </div>
   );
 }
