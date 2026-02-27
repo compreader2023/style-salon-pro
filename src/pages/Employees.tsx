@@ -85,15 +85,16 @@ export default function Employees() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">员工管理</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-foreground">员工管理</h2>
           <p className="text-sm text-muted-foreground mt-1">管理系统用户账号</p>
         </div>
-        <Button onClick={() => setShowAddDialog(true)}>
+        <Button onClick={() => setShowAddDialog(true)} size="sm" className="md:size-default">
           <UserPlus className="w-4 h-4 mr-1.5" />
-          添加员工
+          <span className="hidden sm:inline">添加员工</span>
+          <span className="sm:hidden">添加</span>
         </Button>
       </div>
 
@@ -109,82 +110,83 @@ export default function Employees() {
             return (
               <div
                 key={emp.id}
-                className={`bg-card border border-border rounded-xl p-4 flex items-center justify-between gap-4 ${banned ? "opacity-60" : ""}`}
+                className={`bg-card border border-border rounded-xl p-4 ${banned ? "opacity-60" : ""}`}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${emp.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
-                    {emp.role === "admin" ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground truncate">{emp.display_name}</span>
-                      {isSelf && <Badge variant="outline" className="text-xs">我</Badge>}
-                      {banned && <Badge variant="destructive" className="text-xs">已停用</Badge>}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${emp.role === "admin" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      {emp.role === "admin" ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">{emp.email}</p>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-foreground truncate">{emp.display_name}</span>
+                        {isSelf && <Badge variant="outline" className="text-xs">我</Badge>}
+                        {banned && <Badge variant="destructive" className="text-xs">已停用</Badge>}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">{emp.email}</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge variant={emp.role === "admin" ? "default" : "secondary"}>
+                  <Badge variant={emp.role === "admin" ? "default" : "secondary"} className="shrink-0">
                     {emp.role === "admin" ? "管理员" : "店员"}
                   </Badge>
-
-                  {!isSelf && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="重置密码"
-                        onClick={() => { setResetTarget(emp); setNewPassword(""); }}
-                      >
-                        <KeyRound className="w-4 h-4" />
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={emp.role === "admin" ? "降为店员" : "升为管理员"}
-                        onClick={() => handleToggleRole(emp)}
-                        disabled={actionLoading}
-                      >
-                        <Shield className="w-4 h-4" />
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={banned ? "启用账号" : "停用账号"}
-                        onClick={() => handleAction(banned ? "enable_user" : "disable_user", emp.id)}
-                        disabled={actionLoading}
-                      >
-                        {banned ? <CheckCircle className="w-4 h-4 text-primary" /> : <Ban className="w-4 h-4 text-destructive" />}
-                      </Button>
-
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="删除账号">
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>确认删除</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              确定要删除员工「{emp.display_name}」的账号吗？此操作不可恢复。
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>取消</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleAction("delete_user", emp.id)}>
-                              确认删除
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </>
-                  )}
                 </div>
+
+                {!isSelf && (
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setResetTarget(emp); setNewPassword(""); }}
+                    >
+                      <KeyRound className="w-3.5 h-3.5 mr-1" />
+                      重置密码
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleRole(emp)}
+                      disabled={actionLoading}
+                    >
+                      <Shield className="w-3.5 h-3.5 mr-1" />
+                      {emp.role === "admin" ? "降为店员" : "升为管理员"}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAction(banned ? "enable_user" : "disable_user", emp.id)}
+                      disabled={actionLoading}
+                    >
+                      {banned ? <CheckCircle className="w-3.5 h-3.5 mr-1 text-primary" /> : <Ban className="w-3.5 h-3.5 mr-1 text-destructive" />}
+                      {banned ? "启用" : "停用"}
+                    </Button>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-destructive border-destructive/30">
+                          <Trash2 className="w-3.5 h-3.5 mr-1" />
+                          删除
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>确认删除</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            确定要删除员工「{emp.display_name}」的账号吗？此操作不可恢复。
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>取消</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleAction("delete_user", emp.id)}>
+                            确认删除
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
               </div>
             );
           })}

@@ -79,7 +79,6 @@ export default function Checkout() {
       oPay = totalAmount;
     }
 
-    // Create consumption record
     const { data: record, error: recErr } = await supabase.from("consumption_records").insert({
       member_id: member.id,
       total_amount: totalAmount,
@@ -91,7 +90,6 @@ export default function Checkout() {
 
     if (recErr || !record) { toast({ title: "结算失败", variant: "destructive" }); return; }
 
-    // Insert items
     await supabase.from("consumption_items").insert(
       cart.map(i => ({
         consumption_id: record.id,
@@ -101,7 +99,6 @@ export default function Checkout() {
       }))
     );
 
-    // Update member
     const newBalance = Number(member.balance) - bPay;
     await supabase.from("members").update({
       balance: newBalance,
@@ -115,15 +112,15 @@ export default function Checkout() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">消费结算</h1>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">消费结算</h1>
         <p className="text-sm text-muted-foreground mt-1">选择服务项目并结算</p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
         {/* Left: Services */}
-        <div className="lg:col-span-2 space-y-5">
-          <div className="bg-card rounded-xl border border-border p-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-5">
+          <div className="bg-card rounded-xl border border-border p-4 md:p-6">
             <Label className="mb-1.5 block">选择会员</Label>
             <MemberSearch onSelect={setMember} />
             {member && (
@@ -137,7 +134,7 @@ export default function Checkout() {
             )}
           </div>
 
-          <div className="bg-card rounded-xl border border-border p-6">
+          <div className="bg-card rounded-xl border border-border p-4 md:p-6">
             <Label className="mb-3 block">选择服务</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {services.map((s) => {
@@ -161,7 +158,7 @@ export default function Checkout() {
         </div>
 
         {/* Right: Cart & Pay */}
-        <div className="bg-card rounded-xl border border-border p-6 h-fit">
+        <div className="bg-card rounded-xl border border-border p-4 md:p-6 h-fit">
           <h2 className="font-semibold text-lg mb-4">结算清单</h2>
           {cart.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-6">请选择服务项目</p>
@@ -174,11 +171,11 @@ export default function Checkout() {
                     <p className="text-xs text-muted-foreground">¥{item.service.price} × {item.quantity}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => updateQty(item.service.id, -1)} className="w-6 h-6 rounded border border-border flex items-center justify-center hover:bg-accent">
+                    <button onClick={() => updateQty(item.service.id, -1)} className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-accent">
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="text-sm w-4 text-center">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.service.id, 1)} className="w-6 h-6 rounded border border-border flex items-center justify-center hover:bg-accent">
+                    <button onClick={() => updateQty(item.service.id, 1)} className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-accent">
                       <Plus className="w-3 h-3" />
                     </button>
                   </div>
