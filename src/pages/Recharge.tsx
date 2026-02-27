@@ -63,7 +63,6 @@ export default function Recharge() {
 
     const totalCredit = amt + bonus;
 
-    // Insert recharge record
     const { error: recErr } = await supabase.from("recharge_records").insert({
       member_id: member.id,
       amount: amt,
@@ -74,7 +73,6 @@ export default function Recharge() {
 
     if (recErr) { toast({ title: "充值失败", description: recErr.message, variant: "destructive" }); return; }
 
-    // Update member balance
     const { error: memErr } = await supabase.from("members").update({
       balance: Number(member.balance) + totalCredit,
       total_recharged: Number(member.total_recharged) + amt,
@@ -90,23 +88,23 @@ export default function Recharge() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">会员充值</h1>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">会员充值</h1>
         <p className="text-sm text-muted-foreground mt-1">为会员充值余额</p>
       </div>
 
       <RechargeRulesManager rules={rules} onRulesChange={fetchRules} />
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
         {/* Left: Form */}
-        <div className="bg-card rounded-xl border border-border p-6 space-y-5">
+        <div className="bg-card rounded-xl border border-border p-4 md:p-6 space-y-4 md:space-y-5">
           <div>
             <Label className="mb-1.5 block">选择会员</Label>
             <MemberSearch onSelect={setMember} />
           </div>
 
           {member && (
-            <div className="bg-accent rounded-lg p-4">
+            <div className="bg-accent rounded-lg p-3 md:p-4">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-semibold text-foreground">{member.name}</p>
@@ -114,7 +112,7 @@ export default function Recharge() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-muted-foreground">当前余额</p>
-                  <p className="text-xl font-bold text-primary">¥{Number(member.balance).toFixed(2)}</p>
+                  <p className="text-lg md:text-xl font-bold text-primary">¥{Number(member.balance).toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -134,7 +132,7 @@ export default function Recharge() {
           {/* Quick select rules */}
           <div>
             <Label className="mb-1.5 block">快捷充值（含赠送）</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {rules.map((r) => (
                 <button
                   key={r.id}
@@ -154,7 +152,7 @@ export default function Recharge() {
 
           <div>
             <Label className="mb-1.5 block">支付方式</Label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {paymentMethods.map((pm) => (
                 <button
                   key={pm.value}
@@ -179,7 +177,7 @@ export default function Recharge() {
         </div>
 
         {/* Right: Summary */}
-        <div className="bg-card rounded-xl border border-border p-6">
+        <div className="bg-card rounded-xl border border-border p-4 md:p-6">
           <h2 className="font-semibold text-lg mb-4">充值确认</h2>
           <div className="space-y-3">
             <div className="flex justify-between py-2 border-b border-border">

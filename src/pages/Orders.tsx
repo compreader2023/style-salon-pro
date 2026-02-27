@@ -77,19 +77,21 @@ export default function Orders() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">订单查询</h1>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">订单查询</h1>
         <p className="text-sm text-muted-foreground mt-1">查看充值和消费记录</p>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="搜索会员号..." className="pl-9" />
         </div>
-        <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-40" />
-        <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-40" />
+        <div className="flex gap-2">
+          <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="flex-1 sm:w-40" />
+          <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="flex-1 sm:w-40" />
+        </div>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -99,7 +101,8 @@ export default function Orders() {
         </TabsList>
 
         <TabsContent value="consumption">
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          {/* Desktop table */}
+          <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -151,10 +154,46 @@ export default function Orders() {
               </table>
             </div>
           </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {consumptions.map((c) => (
+              <div key={c.id} className={`bg-card rounded-xl border border-border p-4 ${c.is_refunded ? "opacity-60" : ""}`}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="font-medium text-foreground">{c.members?.name}</span>
+                    <span className="text-xs text-muted-foreground ml-1.5">{c.members?.member_no}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {c.is_refunded ? (
+                      <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">已退款</span>
+                    ) : (
+                      <>
+                        <span className="text-xs bg-success/10 text-success px-2 py-0.5 rounded-full">正常</span>
+                        <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setRefundDialog(c.id)}>
+                          <RefreshCw className="w-3.5 h-3.5" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 mt-2 text-sm">
+                  <span className="font-semibold text-primary">¥{c.total_amount}</span>
+                  <span className="text-muted-foreground text-xs">{payLabels[c.payment_method] || c.payment_method}</span>
+                  <span className="text-muted-foreground text-xs ml-auto">{c.operator_name}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5">{new Date(c.created_at).toLocaleString("zh-CN")}</p>
+              </div>
+            ))}
+            {consumptions.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground text-sm">暂无消费记录</div>
+            )}
+          </div>
         </TabsContent>
 
         <TabsContent value="recharge">
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          {/* Desktop table */}
+          <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -187,6 +226,30 @@ export default function Orders() {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {recharges.map((r) => (
+              <div key={r.id} className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-medium text-foreground">{r.members?.name}</span>
+                    <span className="text-xs text-muted-foreground ml-1.5">{r.members?.member_no}</span>
+                  </div>
+                  <span className="font-semibold text-primary">¥{r.amount}</span>
+                </div>
+                <div className="flex items-center gap-3 mt-2 text-sm">
+                  <span className="text-success font-semibold text-xs">送 ¥{r.bonus}</span>
+                  <span className="text-muted-foreground text-xs">{payLabels[r.payment_method] || r.payment_method}</span>
+                  <span className="text-muted-foreground text-xs ml-auto">{r.operator_name}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5">{new Date(r.created_at).toLocaleString("zh-CN")}</p>
+              </div>
+            ))}
+            {recharges.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground text-sm">暂无充值记录</div>
+            )}
           </div>
         </TabsContent>
       </Tabs>

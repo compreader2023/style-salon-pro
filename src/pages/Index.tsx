@@ -51,14 +51,14 @@ export default function Index() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">仪表盘</h1>
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">仪表盘</h1>
         <p className="text-sm text-muted-foreground mt-1">今日运营数据概览</p>
       </div>
 
       <div className="mb-4">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">今日数据</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatCard title="今日充值" value={`¥${stats.todayRecharge.toFixed(2)}`} icon={CreditCard} />
           <StatCard title="今日消费" value={`¥${stats.todayConsumption.toFixed(2)}`} icon={ShoppingCart} />
           <StatCard title="今日新会员" value={stats.newMembersToday} icon={UserPlus} />
@@ -68,7 +68,7 @@ export default function Index() {
 
       <div>
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">本月数据</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           <StatCard title="本月充值" value={`¥${stats.monthRecharge.toFixed(2)}`} icon={CreditCard} description="本月充值总额" />
           <StatCard title="本月消费" value={`¥${stats.monthConsumption.toFixed(2)}`} icon={ShoppingCart} description="本月消费总额" />
           <StatCard title="本月新会员" value={stats.newMembersMonth} icon={UserPlus} description="本月新注册会员" />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Search, Edit2, X } from "lucide-react";
+import { Plus, Search, Edit2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
@@ -70,18 +70,19 @@ export default function Members() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">会员管理</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">会员管理</h1>
           <p className="text-sm text-muted-foreground mt-1">共 {total} 位会员</p>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} size="sm" className="md:size-default">
           <Plus className="w-4 h-4 mr-1.5" />
-          新增会员
+          <span className="hidden sm:inline">新增会员</span>
+          <span className="sm:hidden">新增</span>
         </Button>
       </div>
 
-      <div className="relative mb-4 max-w-sm">
+      <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           value={search}
@@ -91,7 +92,8 @@ export default function Members() {
         />
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden md:block bg-card rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -131,6 +133,53 @@ export default function Members() {
         </div>
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-xs text-muted-foreground">第 {page + 1}/{totalPages} 页</p>
+            <div className="flex gap-1">
+              <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>上一页</Button>
+              <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>下一页</Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile card list */}
+      <div className="md:hidden space-y-3">
+        {members.map((m) => (
+          <div key={m.id} className="bg-card rounded-xl border border-border p-4">
+            <div className="flex items-start justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-foreground">{m.name}</span>
+                  <span className="text-xs text-primary font-mono font-semibold">{m.member_no}</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">{m.phone}</p>
+              </div>
+              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => openEdit(m)}>
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
+              <div>
+                <p className="text-xs text-muted-foreground">余额</p>
+                <p className="text-sm font-semibold text-primary">¥{Number(m.balance).toFixed(2)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">累计消费</p>
+                <p className="text-sm font-semibold">¥{Number(m.total_spent).toFixed(2)}</p>
+              </div>
+              <div className="ml-auto text-right">
+                <p className="text-xs text-muted-foreground">注册</p>
+                <p className="text-xs text-muted-foreground">{new Date(m.created_at).toLocaleDateString("zh-CN")}</p>
+              </div>
+            </div>
+            {m.notes && <p className="text-xs text-muted-foreground mt-2 truncate">备注: {m.notes}</p>}
+          </div>
+        ))}
+        {members.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground text-sm">暂无会员数据</div>
+        )}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2">
             <p className="text-xs text-muted-foreground">第 {page + 1}/{totalPages} 页</p>
             <div className="flex gap-1">
               <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>上一页</Button>
