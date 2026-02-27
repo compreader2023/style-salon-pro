@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Search, Edit2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -12,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 type Member = Tables<"members">;
 
 export default function Members() {
+  const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
@@ -110,7 +112,7 @@ export default function Members() {
             </thead>
             <tbody>
               {members.map((m) => (
-                <tr key={m.id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors">
+                <tr key={m.id} className="border-b border-border last:border-0 hover:bg-accent/30 transition-colors cursor-pointer" onClick={() => navigate(`/members/${m.id}`)}>
                   <td className="px-4 py-3 font-mono text-xs text-primary font-semibold">{m.member_no}</td>
                   <td className="px-4 py-3 font-medium">{m.name}</td>
                   <td className="px-4 py-3 text-muted-foreground">{m.phone}</td>
@@ -119,7 +121,7 @@ export default function Members() {
                   <td className="px-4 py-3 text-muted-foreground text-xs max-w-[120px] truncate">{m.notes || "-"}</td>
                   <td className="px-4 py-3 text-muted-foreground text-xs">{new Date(m.created_at).toLocaleDateString("zh-CN")}</td>
                   <td className="px-4 py-3 text-center">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(m)}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
                       <Edit2 className="w-3.5 h-3.5" />
                     </Button>
                   </td>
@@ -145,7 +147,7 @@ export default function Members() {
       {/* Mobile card list */}
       <div className="md:hidden space-y-3">
         {members.map((m) => (
-          <div key={m.id} className="bg-card rounded-xl border border-border p-4">
+          <div key={m.id} className="bg-card rounded-xl border border-border p-4 cursor-pointer active:bg-accent/30 transition-colors" onClick={() => navigate(`/members/${m.id}`)}>
             <div className="flex items-start justify-between">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
@@ -154,7 +156,7 @@ export default function Members() {
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">{m.phone}</p>
               </div>
-              <Button variant="ghost" size="icon" className="shrink-0" onClick={() => openEdit(m)}>
+              <Button variant="ghost" size="icon" className="shrink-0" onClick={(e) => { e.stopPropagation(); openEdit(m); }}>
                 <Edit2 className="w-4 h-4" />
               </Button>
             </div>
