@@ -22,6 +22,8 @@ export default function MemberDetail() {
   const [member, setMember] = useState<Member | null>(null);
   const [recharges, setRecharges] = useState<RechargeRecord[]>([]);
   const [consumptions, setConsumptions] = useState<ConsumptionWithItems[]>([]);
+  const [computedRecharged, setComputedRecharged] = useState(0);
+  const [computedSpent, setComputedSpent] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +36,8 @@ export default function MemberDetail() {
         supabase.from("consumption_records").select("*").eq("member_id", id).order("created_at", { ascending: false }),
       ]);
       setMember(memberRes.data);
-      setRecharges(rechargeRes.data || []);
+      const rechargeData = rechargeRes.data || [];
+      setRecharges(rechargeData);
 
       // Load consumption items for each record
       const records = consumptionRes.data || [];
@@ -53,6 +56,13 @@ export default function MemberDetail() {
       } else {
         setConsumptions([]);
       }
+
+      // Compute accurate stats from records
+      const calcRecharged = rechargeData.reduce((s, r) => s + Number(r.amount), 0);
+      const calcSpent = records.filter(r => !r.is_refunded).reduce((s, r) => s + Number(r.total_amount), 0);
+      setComputedRecharged(calcRecharged);
+      setComputedSpent(calcSpent);
+
       setLoading(false);
     };
     load();
@@ -106,14 +116,14 @@ export default function MemberDetail() {
           <p className="text-lg font-bold text-primary">¥{Number(member.balance).toFixed(2)}</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 text-center">
-          <TrendingUp className="w-5 h-5 text-green-500 mx-auto mb-1" />
+          <TrendingUp className="w-5 h-5 text-primary mx-auto mb-1" />
           <p className="text-xs text-muted-foreground">累计充值</p>
-          <p className="text-lg font-bold">¥{Number(member.total_recharged).toFixed(2)}</p>
+          <p className="text-lg font-bold">¥{computedRecharged.toFixed(2)}</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 text-center">
-          <CreditCard className="w-5 h-5 text-orange-500 mx-auto mb-1" />
+          <CreditCard className="w-5 h-5 text-primary mx-auto mb-1" />
           <p className="text-xs text-muted-foreground">累计消费</p>
-          <p className="text-lg font-bold">¥{Number(member.total_spent).toFixed(2)}</p>
+          <p className="text-lg font-bold">¥{computedSpent.toFixed(2)}</p>
         </div>
       </div>
 
