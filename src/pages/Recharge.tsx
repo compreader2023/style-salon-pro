@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { CreditCard, Banknote, Smartphone, CreditCard as CardIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import MemberSearch from "@/components/MemberSearch";
 import { useToast } from "@/hooks/use-toast";
+import RechargeRulesManager from "@/components/RechargeRulesManager";
 
 const paymentMethods = [
   { value: "cash", label: "现金", icon: Banknote },
@@ -26,11 +27,15 @@ export default function Recharge() {
   const { profile } = useAuth();
   const operator = profile?.display_name || "店员";
 
-  useEffect(() => {
+  const fetchRules = useCallback(() => {
     supabase.from("recharge_rules").select("*").eq("is_active", true).order("recharge_amount").then(({ data }) => {
       setRules(data || []);
     });
   }, []);
+
+  useEffect(() => {
+    fetchRules();
+  }, [fetchRules]);
 
   const calcBonus = (val: number) => {
     let b = 0;
@@ -89,6 +94,8 @@ export default function Recharge() {
         <h1 className="text-2xl font-bold text-foreground">会员充值</h1>
         <p className="text-sm text-muted-foreground mt-1">为会员充值余额</p>
       </div>
+
+      <RechargeRulesManager rules={rules} onRulesChange={fetchRules} />
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Left: Form */}
