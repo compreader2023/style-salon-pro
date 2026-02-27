@@ -11,6 +11,7 @@ import Recharge from "./pages/Recharge";
 import Checkout from "./pages/Checkout";
 import Orders from "./pages/Orders";
 import Employees from "./pages/Employees";
+import MemberDetail from "./pages/MemberDetail";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/login" element={<LoginRoute />} />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/members" element={<ProtectedRoute><Members /></ProtectedRoute>} />
+            <Route path="/members/:id" element={<ProtectedRoute><MemberDetail /></ProtectedRoute>} />
             <Route path="/recharge" element={<ProtectedRoute><Recharge /></ProtectedRoute>} />
             <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
