@@ -186,27 +186,29 @@ export default function Checkout() {
           {/* Custom Service Input */}
           <div className="bg-card rounded-xl border border-border p-4 md:p-6">
             <Label className="mb-3 block">自定义服务</Label>
-            <div className="flex gap-2 items-end">
-              <div className="flex-1">
-                <Label className="text-xs text-muted-foreground mb-1 block">服务名称</Label>
-                <Input
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="如：刮胡子"
-                />
+            <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+              <div className="flex gap-2 flex-1">
+                <div className="flex-1">
+                  <Label className="text-xs text-muted-foreground mb-1 block">服务名称</Label>
+                  <Input
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value)}
+                    placeholder="如：刮胡子"
+                  />
+                </div>
+                <div className="w-24 sm:w-28">
+                  <Label className="text-xs text-muted-foreground mb-1 block">价格</Label>
+                  <Input
+                    type="number"
+                    value={customPrice}
+                    onChange={(e) => setCustomPrice(e.target.value)}
+                    placeholder="10"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
               </div>
-              <div className="w-28">
-                <Label className="text-xs text-muted-foreground mb-1 block">价格</Label>
-                <Input
-                  type="number"
-                  value={customPrice}
-                  onChange={(e) => setCustomPrice(e.target.value)}
-                  placeholder="10"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <Button variant="outline" onClick={addCustomToCart} className="shrink-0">
+              <Button variant="outline" onClick={addCustomToCart} className="shrink-0 w-full sm:w-auto">
                 <PlusCircle className="w-4 h-4 mr-1" />
                 添加
               </Button>
